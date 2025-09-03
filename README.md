@@ -1,24 +1,37 @@
-# README
+# Janus-backend
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## これは何？
 
-Things you may want to cover:
+このリポジトリは、Janusのバックエンド部分のリポジトリです。
 
-* Ruby version
+## 技術スタック
 
-* System dependencies
+- Ruby on Rails
+- Auth0(認証プラットフォーム)
 
-* Configuration
+## 環境構築
 
-* Database creation
+まず、[GitHubのリポジトリ](https://github.com/Retasusan/janus-backend)をクローンします。
+クローンは、以下のコマンドで行えます。
 
-* Database initialization
+```bash
+cd リポジトリを置きたいディレクトリ
+git clone https://github.com/Retasusan/janus-backend.git
+```
 
-* How to run the test suite
+次に、クローンしたディレクトリに移動し、必要なgemをインストールします。
 
-* Services (job queues, cache servers, search engines, etc.)
+```bash
+cd janus-backend
+bundle install
+```
 
-* Deployment instructions
+次に、起動に必要な環境変数を設定します。`.env.local`ファイルを作成して環境変数を設定してください。環境変数は、[Retasusan](https://github.com/Retasusan)にコンタクトをとって、共有してもらってください。
 
-* ...
+
+最後に、サーバーを起動します。
+
+```bash
+rails server
+```
+ポート番号を8000に変えているので、サーバの起動はそのポートにアクセスして確認してください。
