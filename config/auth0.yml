@@ -1,0 +1,9 @@
+development:
+  auth0_client_id: dev-abc123
+  auth0_client_secret: dev-secret
+  auth0_domain: dev-tenant.auth0.com
+
+production:
+  auth0_client_id: <%= ENV['AUTH0_CLIENT_ID'] %>
+  auth0_client_secret: <%= ENV['AUTH0_CLIENT_SECRET'] %>
+  auth0_domain: <%= ENV['AUTH0_DOMAIN'] %>
