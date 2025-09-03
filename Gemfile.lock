@@ -100,6 +100,11 @@ GEM
     erubi (1.13.1)
     et-orbi (1.3.0)
       tzinfo
+    factory_bot (6.5.5)
+      activesupport (>= 6.1.0)
+    factory_bot_rails (6.5.0)
+      factory_bot (~> 6.5)
+      railties (>= 6.1.0)
     faraday (2.13.4)
       faraday-net_http (>= 2.0, < 3.5)
       json
@@ -390,6 +395,7 @@ DEPENDENCIES
   brakeman
   debug
   dotenv-rails
+  factory_bot_rails
   jwt
   kamal
   omniauth-auth0 (~> 3.0)
