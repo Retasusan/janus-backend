@@ -19,19 +19,18 @@ cd リポジトリを置きたいディレクトリ
 git clone https://github.com/Retasusan/janus-backend.git
 ```
 
-次に、クローンしたディレクトリに移動し、必要なgemをインストールします。
+次に、クローンしたディレクトリに移動します。
 
 ```bash
 cd janus-backend
-bundle install
 ```
 
 次に、起動に必要な環境変数を設定します。`.env.local`ファイルを作成して環境変数を設定してください。環境変数は、[Retasusan](https://github.com/Retasusan)にコンタクトをとって、共有してもらってください。
 
-最後に、サーバーを起動します。
+最後に、サーバーを起動します。Dockerを使用するので、Docker Desktopなどをインストールしてから、以下のコマンドを実行してください。
 
 ```bash
-rails server
+docker compose up -d
 ```
 
-ポート番号を8000に変えているので、サーバの起動はそのポートにアクセスして確認してください。
+Dockerのデーモンが起動していることを確認した上で、起動してください。また、ポート番号を8000に変えているので、サーバの起動はそのポートにアクセスして確認してください。
