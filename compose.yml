@@ -6,10 +6,12 @@ services:
       POSTGRES_PASSWORD: password
     volumes:
       - postgres_volume:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     restart: always
   backend:
     build: .
-    command: bash -c "rm -f tmp/pids/server.pid && bundle install && bundle exec rails s -b '0.0.0.0'"
+    command: bash -c "rm -f tmp/pids/server.pid && bundle install && bundle exec rails db:create db:migrate && bundle exec rails s -b '0.0.0.0'"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password

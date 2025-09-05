@@ -1,5 +1,5 @@
 FROM ruby:3.4.3
-RUN apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs vim
+RUN apt-get update -qq && apt-get install -y postgresql-client build-essential libpq-dev nodejs vim
 RUN mkdir /backend
 WORKDIR /backend
 ADD Gemfile /backend/Gemfile

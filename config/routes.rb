@@ -9,6 +9,8 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :test
+      get "/"
+      get "/users/me", to: "users#me"
     end
   end
 end
