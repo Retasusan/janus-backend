@@ -9,8 +9,13 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :test
-      get "/"
+      get "/", to: "health#show"
       get "/users/me", to: "users#me"
+      resources :servers, only: [:index, :create] do
+        resources :channels, only: [:index, :create] do
+          resources :messages, only: [:index, :create]
+        end
+      end
     end
   end
 end

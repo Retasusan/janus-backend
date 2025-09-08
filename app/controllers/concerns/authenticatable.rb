@@ -33,6 +33,7 @@ module Authenticatable
       else
         @current_user = payload
       end
+      @current_user = payload
     else
       render json: { error: "Unauthorized" }, status: :unauthorized
     end
@@ -52,5 +53,17 @@ module Authenticatable
         }
       end
     end
+  end
+
+  def current_user_id
+    @current_user["sub"] # Auth0 のユーザーID
+  end
+
+  def current_user_email
+    @current_user["email"]
+  end
+
+  def current_user_name
+    @current_user["name"] || "Unknown"
   end
 end

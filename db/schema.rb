@@ -10,9 +10,48 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_05_151246) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_08_163725) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "channels", force: :cascade do |t|
+    t.bigint "server_id", null: false
+    t.string "name", null: false
+    t.string "channel_type", default: "text", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["server_id"], name: "index_channels_on_server_id"
+  end
+
+  create_table "memberships", force: :cascade do |t|
+    t.bigint "server_id", null: false
+    t.string "user_auth0_id", null: false
+    t.string "role", default: "member", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["server_id", "user_auth0_id"], name: "index_memberships_on_server_id_and_user_auth0_id", unique: true
+    t.index ["server_id"], name: "index_memberships_on_server_id"
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.bigint "channel_id", null: false
+    t.string "user_auth0_id", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["channel_id"], name: "index_messages_on_channel_id"
+  end
+
+  create_table "server_memberships", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "servers", force: :cascade do |t|
+    t.string "name", null: false, comment: "サーバー名"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "tests", force: :cascade do |t|
     t.string "description"
@@ -29,4 +68,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_05_151246) do
     t.index ["auth0_id"], name: "index_users_on_auth0_id", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
   end
+
+  add_foreign_key "channels", "servers"
+  add_foreign_key "memberships", "servers"
+  add_foreign_key "messages", "channels"
 end
