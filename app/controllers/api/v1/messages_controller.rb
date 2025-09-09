@@ -5,8 +5,7 @@ module Api
       before_action :set_channel
 
       def index
-        channel = Channel.find(params[:channel_id])
-        @messages = channel.messages.order(created_at: :asc)
+        @messages = @channel.messages.order(created_at: :asc)
         render json: @messages
       end
 
@@ -23,7 +22,9 @@ module Api
       private
 
       def set_channel
-        @channel = Channel.find(params[:channel_id])
+        @channel = user_channels.find(params[:channel_id])
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "Channel not found or access denied" }, status: :not_found
       end
 
       def message_params
