@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_08_163725) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_10_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -20,6 +20,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_08_163725) do
     t.string "channel_type", default: "text", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "description"
+    t.json "settings", default: {}
     t.index ["server_id"], name: "index_channels_on_server_id"
   end
 

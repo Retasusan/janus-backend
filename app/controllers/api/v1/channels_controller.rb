@@ -6,14 +6,14 @@ module Api
 
       def index
         channels = @server.channels
-        render json: channels
+        render json: channels.map { |channel| channel_response(channel) }
       end
 
       def create
         channel = @server.channels.new(channel_params)
 
         if channel.save
-          render json: channel, status: :created
+          render json: channel_response(channel), status: :created
         else
           render json: { errors: channel.errors.full_messages }, status: :unprocessable_entity
         end
@@ -28,7 +28,20 @@ module Api
       end
 
       def channel_params
-        params.permit(:name)
+        params.permit(:name, :type, :description, settings: {})
+      end
+
+      def channel_response(channel)
+        {
+          id: channel.id,
+          name: channel.name,
+          serverId: channel.server_id,
+          type: channel.type,
+          description: channel.description,
+          settings: channel.settings,
+          createdAt: channel.created_at,
+          updatedAt: channel.updated_at
+        }
       end
     end
   end
