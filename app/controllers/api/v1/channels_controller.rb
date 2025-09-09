@@ -22,9 +22,9 @@ module Api
       private
 
       def set_server
-        @server = Server.find(params[:server_id])
+        @server = user_servers.find(params[:server_id])
       rescue ActiveRecord::RecordNotFound
-        render json: { error: "Server not found" }, status: :not_found
+        render json: { error: "Server not found or access denied" }, status: :not_found
       end
 
       def channel_params

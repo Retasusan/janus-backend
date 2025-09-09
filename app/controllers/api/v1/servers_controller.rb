@@ -5,8 +5,7 @@ module Api
 
       # サーバー一覧（所属しているサーバーのみ）
       def index
-        servers = Server.joins(:memberships)
-                        .where(memberships: { user_auth0_id: current_user_auth0_id })
+        servers = user_servers
         render json: servers
       end
 
