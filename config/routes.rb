@@ -12,6 +12,14 @@ Rails.application.routes.draw do
       get "/", to: "health#show"
       get "/users/me", to: "users#me"
       resources :servers, only: [:index, :create] do
+        collection do
+          post :join
+          get 'invite/:invite_code', to: 'servers#invite_info'
+        end
+        member do
+          post :invite
+          patch :regenerate_invite_code
+        end
         resources :channels, only: [:index, :create] do
           resources :messages, only: [:index, :create]
         end
