@@ -21,6 +21,14 @@ module Api
       end
 
       private
+
+      def set_channel
+        @channel = Channel.find(params[:channel_id])
+      end
+
+      def message_params
+        params.require(:message).permit(:content)
+      end
     end
   end
 end
