@@ -151,11 +151,6 @@ module Api
         # デフォルトチャンネルを作成
         default_channels = [
           {
-            name: '権限管理',
-            channel_type: 'rbac',
-            description: 'サーバーの権限とロールを管理するチャンネルです'
-          },
-          {
             name: '一般',
             channel_type: 'text',
             description: '一般的な雑談用チャンネルです'
