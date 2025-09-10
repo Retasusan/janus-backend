@@ -1,10 +1,15 @@
 module Api
   module V1
     class MembersController < ApplicationController
+      include RbacConcern
+      
       before_action :authorize_request
       before_action :set_server
+      before_action :require_server_member
 
       def index
+        # メンバー一覧の閲覧権限をチェック
+        return unless require_permission('read_messages', @server.id)
         memberships = @server.memberships.includes(:role_assignments => :server_role)
         
         # 全ユーザーのAuth0 IDを収集
@@ -39,6 +44,8 @@ module Api
       end
 
       def show
+        return unless require_permission('read_messages', @server.id)
+        
         membership = @server.memberships.find(params[:id])
         
         # Auth0からユーザー情報を取得
@@ -64,6 +71,45 @@ module Api
         }
 
         render json: member_data
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "Member not found" }, status: :not_found
+      end
+
+      def me
+        return unless require_permission('read_messages', @server.id)
+        
+        membership = @server.memberships.find_by(user_auth0_id: current_user_auth0_id)
+        
+        unless membership
+          render json: { error: "Membership not found" }, status: :not_found
+          return
+        end
+
+        # Auth0からユーザー情報を取得
+        auth0_service = Auth0Service.new
+        user_info = auth0_service.get_user(membership.user_auth0_id) || get_fallback_user_info(membership.user_auth0_id)
+        
+        member_data = {
+          id: membership.id,
+          userAuth0Id: membership.user_auth0_id,
+          userName: user_info[:name],
+          userEmail: user_info[:email],
+          userPicture: user_info[:picture],
+          role: membership.role,
+          joinedAt: membership.created_at,
+          roles: membership.role_assignments.includes(:server_role).map do |assignment|
+            {
+              id: assignment.server_role.id,
+              name: assignment.server_role.name,
+              color: assignment.server_role.color,
+              description: assignment.server_role.description,
+              permissionLevel: assignment.server_role.permission_level
+            }
+          end
+        }
+
+        # 権限情報を含めてレスポンス
+        render json: include_permissions_in_response(member_data, @server.id)
       rescue ActiveRecord::RecordNotFound
         render json: { error: "Member not found" }, status: :not_found
       end

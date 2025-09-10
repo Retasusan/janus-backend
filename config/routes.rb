@@ -24,7 +24,11 @@ Rails.application.routes.draw do
           resources :messages, only: [:index, :create]
           resources :channel_permissions, only: [:index, :create, :update, :destroy], path: 'permissions'
         end
-        resources :members, only: [:index, :show]
+        resources :members, only: [:index, :show] do
+          collection do
+            get :me
+          end
+        end
         resources :server_roles, only: [:index, :create, :update, :destroy], path: 'roles' do
           member do
             post :assign, to: 'server_roles#assign_role'
