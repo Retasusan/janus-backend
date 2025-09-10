@@ -43,8 +43,9 @@ module Api
 
       # ユーザーにロールを割り当て
       def assign_role
-        membership = @server.memberships.find_by(user_auth0_id: params[:user_id])
-        role = @server.server_roles.find(params[:role_id])
+        user_id = params[:userId] || params[:user_id]
+        membership = @server.memberships.find_by(user_auth0_id: user_id)
+        role = @server.server_roles.find(params[:id])
         
         unless membership
           render json: { error: "User not found in server" }, status: :not_found
@@ -57,7 +58,15 @@ module Api
         )
 
         if assignment.persisted?
-          render json: { message: "Role assigned successfully" }
+          render json: { 
+            message: "Role assigned successfully",
+            assignment: {
+              id: assignment.id,
+              userId: membership.user_auth0_id,
+              roleId: role.id,
+              roleName: role.name
+            }
+          }
         else
           render json: { errors: assignment.errors.full_messages }, status: :unprocessable_entity
         end
@@ -65,8 +74,9 @@ module Api
 
       # ユーザーからロールを削除
       def remove_role
-        membership = @server.memberships.find_by(user_auth0_id: params[:user_id])
-        role = @server.server_roles.find(params[:role_id])
+        user_id = params[:userId] || params[:user_id]
+        membership = @server.memberships.find_by(user_auth0_id: user_id)
+        role = @server.server_roles.find(params[:id])
         
         unless membership
           render json: { error: "User not found in server" }, status: :not_found
