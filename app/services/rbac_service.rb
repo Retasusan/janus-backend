@@ -49,12 +49,6 @@ class RbacService
 
     Rails.logger.info "RBAC Debug: Getting permission level for user_id=#{@user_auth0_id}, server_id=#{@server_id}"
 
-    # サーバーオーナーかどうかチェック
-    if server_owner?
-      Rails.logger.info "RBAC Debug: User is owner, returning admin level (100)"
-      return PERMISSION_LEVELS['admin']  # オーナーは無条件で管理者権限
-    end
-
     # サーバーメンバーシップを取得
     membership = Membership.find_by(
       server_id: @server_id,
