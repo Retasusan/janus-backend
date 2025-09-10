@@ -22,6 +22,23 @@ Rails.application.routes.draw do
         end
         resources :channels, only: [:index, :create] do
           resources :messages, only: [:index, :create]
+          resources :channel_permissions, only: [:index, :create, :update, :destroy], path: 'permissions'
+        end
+        resources :members, only: [:index, :show, :destroy] do
+          collection do
+            get :me
+          end
+        end
+        resources :server_roles, only: [:index, :create, :update, :destroy], path: 'roles' do
+          member do
+            post :assign, to: 'server_roles#assign_role'
+            post :remove, to: 'server_roles#remove_role'
+          end
+        end
+        # ロール割り当て管理
+        resources :role_assignments, only: [:show, :update], param: :user_auth0_id do
+          # GET /api/v1/servers/:server_id/role_assignments/:user_auth0_id - ユーザーのロール取得
+          # PUT /api/v1/servers/:server_id/role_assignments/:user_auth0_id - ロール変更
         end
       end
     end
