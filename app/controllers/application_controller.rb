@@ -17,4 +17,11 @@ class ApplicationController < ActionController::API
     Channel.joins(server: :memberships)
            .where(memberships: { user_auth0_id: current_user_auth0_id })
   end
+
+  # サーバーを設定（共通メソッド）
+  def set_server
+    @server = user_servers.find(params[:server_id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Server not found or access denied" }, status: :not_found
+  end
 end

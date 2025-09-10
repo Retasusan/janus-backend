@@ -1,9 +1,42 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# デフォルトロールを作成するシードファイル
+
+# 各サーバーにデフォルトロールを作成
+Server.find_each do |server|
+  # デフォルトロールが存在しない場合のみ作成
+  unless server.server_roles.exists?
+    default_roles = [
+      {
+        name: 'admin',
+        color: '#F04747',
+        description: 'サーバーの完全な管理権限を持ちます',
+        position: 100
+      },
+      {
+        name: 'moderator',
+        color: '#FAA61A',
+        description: 'チャンネルとメッセージの管理権限を持ちます',
+        position: 50
+      },
+      {
+        name: 'member',
+        color: '#43B581',
+        description: '一般的なメンバー権限を持ちます',
+        position: 10
+      },
+      {
+        name: 'guest',
+        color: '#99AAB5',
+        description: '限定的な閲覧権限のみを持ちます',
+        position: 1
+      }
+    ]
+
+    default_roles.each do |role_data|
+      server.server_roles.create!(role_data)
+    end
+
+    puts "Created default roles for server: #{server.name}"
+  end
+end
+
+puts "Seed completed!"
