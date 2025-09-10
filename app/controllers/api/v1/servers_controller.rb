@@ -11,14 +11,36 @@ module Api
 
       # サーバー作成
       def create
-        server = Server.new(server_params)
+        server = Server.new(server_params.merge(created_by: current_user_auth0_id))
 
-        if server.save
-          Membership.create!(server: server, user_auth0_id: current_user_auth0_id, role: "owner")
-          render json: server_response(server), status: :created
-        else
-          render json: { errors: server.errors.full_messages }, status: :unprocessable_entity
+        ActiveRecord::Base.transaction do
+          if server.save
+            # メンバーシップ作成
+            membership = Membership.create!(
+              server: server, 
+              user_auth0_id: current_user_auth0_id, 
+              role: "owner"
+            )
+            
+            # デフォルトロールが存在しない場合は作成
+            ensure_default_roles(server)
+            
+            # 作成者にAdminロールを自動割り当て
+            admin_role = server.server_roles.find_by(name: 'admin')
+            if admin_role
+              membership.role_assignments.create!(server_role: admin_role)
+            end
+            
+            # デフォルトチャンネルを作成
+            create_default_channels(server)
+            
+            render json: server_response(server), status: :created
+          else
+            render json: { errors: server.errors.full_messages }, status: :unprocessable_entity
+          end
         end
+      rescue => e
+        render json: { error: "Server creation failed: #{e.message}" }, status: :unprocessable_entity
       end
 
       # サーバー参加
@@ -93,6 +115,50 @@ module Api
 
       def server_params
         params.require(:server).permit(:name)
+      end
+
+      def ensure_default_roles(server)
+        # デフォルトロールを作成（存在しない場合のみ）
+        default_roles = [
+          { name: 'admin', permission_level: 100, color: '#DC2626', description: '管理者権限' },
+          { name: 'moderator', permission_level: 50, color: '#7C3AED', description: 'モデレーター権限' },
+          { name: 'member', permission_level: 10, color: '#059669', description: '一般メンバー権限' },
+          { name: 'readonly', permission_level: 3, color: '#6B7280', description: '読み取り専用権限' },
+          { name: 'ob', permission_level: 2, color: '#9CA3AF', description: 'OB権限' },
+          { name: 'guest', permission_level: 1, color: '#D1D5DB', description: 'ゲスト権限' }
+        ]
+
+        default_roles.each do |role_data|
+          server.server_roles.find_or_create_by(name: role_data[:name]) do |role|
+            role.permission_level = role_data[:permission_level]
+            role.color = role_data[:color]
+            role.description = role_data[:description]
+          end
+        end
+      end
+
+      def create_default_channels(server)
+        # デフォルトチャンネルを作成
+        default_channels = [
+          {
+            name: '権限管理',
+            channel_type: 'rbac',
+            description: 'サーバーの権限とロールを管理するチャンネルです'
+          },
+          {
+            name: '一般',
+            channel_type: 'text',
+            description: '一般的な雑談用チャンネルです'
+          }
+        ]
+
+        default_channels.each do |channel_data|
+          server.channels.create!(
+            name: channel_data[:name],
+            channel_type: channel_data[:channel_type],
+            description: channel_data[:description]
+          )
+        end
       end
 
       def server_response(server)

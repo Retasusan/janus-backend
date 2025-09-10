@@ -35,6 +35,11 @@ Rails.application.routes.draw do
             post :remove, to: 'server_roles#remove_role'
           end
         end
+        # ロール割り当て管理
+        resources :role_assignments, only: [:show, :update], param: :user_auth0_id do
+          # GET /api/v1/servers/:server_id/role_assignments/:user_auth0_id - ユーザーのロール取得
+          # PUT /api/v1/servers/:server_id/role_assignments/:user_auth0_id - ロール変更
+        end
       end
     end
   end

@@ -18,10 +18,13 @@ module RbacConcern
       return false
     end
 
+    Rails.logger.info "RBAC Debug: Checking permission '#{permission}' for user '#{current_user_auth0_id}', server_id=#{server_id}"
+
     # サーバーIDが指定されている場合は、そのサーバー用のRBACサービスを作成
     rbac = server_id ? RbacService.new(current_user_auth0_id, server_id) : @rbac_service
 
     unless rbac&.can?(permission, channel_id)
+      Rails.logger.warn "RBAC Debug: Permission denied - user '#{current_user_auth0_id}' lacks '#{permission}' permission"
       render json: { 
         error: "Insufficient permissions", 
         required_permission: permission,

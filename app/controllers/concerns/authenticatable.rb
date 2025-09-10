@@ -32,6 +32,7 @@ module Authenticatable
         render json: { error: "Token has expired" }, status: :unauthorized
       else
         @current_user = payload
+        Rails.logger.info "Auth Debug: Current user authenticated: #{@current_user['sub']}"
       end
       @current_user = payload
     else

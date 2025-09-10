@@ -4,7 +4,7 @@ class ServerRole < ApplicationRecord
   has_many :memberships, through: :role_assignments
   
   # デフォルトロール
-  DEFAULT_ROLES = %w[admin moderator member guest].freeze
+  DEFAULT_ROLES = %w[admin moderator member readonly ob guest].freeze
   
   validates :name, presence: true, length: { minimum: 1, maximum: 50 }
   validates :name, uniqueness: { scope: :server_id }
@@ -16,6 +16,8 @@ class ServerRole < ApplicationRecord
     when 'admin' then 100
     when 'moderator' then 50
     when 'member' then 10
+    when 'readonly' then 3  # 読み取り専用（投稿不可）
+    when 'ob' then 2        # OB（読み取りのみ、管理権限なし）
     when 'guest' then 1
     else 5
     end

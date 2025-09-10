@@ -18,7 +18,6 @@ module Api
         # Auth0から一括でユーザー情報を取得
         auth0_service = Auth0Service.new
         users_info = auth0_service.get_users(user_ids)
-        puts "niigata #{users_info}"
         
         members = memberships.map do |membership|
           user_info = users_info[membership.user_auth0_id] || get_fallback_user_info(membership.user_auth0_id)
@@ -117,10 +116,16 @@ module Api
       private
 
       def set_server
+        Rails.logger.info "MembersController Debug: current_user_auth0_id = #{current_user_auth0_id}"
+        Rails.logger.info "MembersController Debug: requested server_id = #{params[:server_id]}"
+        
         @server = Server.joins(:memberships)
                        .where(memberships: { user_auth0_id: current_user_auth0_id })
                        .find(params[:server_id])
+        
+        Rails.logger.info "MembersController Debug: Server found: #{@server.name}"
       rescue ActiveRecord::RecordNotFound
+        Rails.logger.warn "MembersController Debug: Server not found or user not member"
         render json: { error: "Server not found or access denied" }, status: :not_found
       end
 

@@ -1,16 +1,18 @@
 module Api
   module V1
     class ServerRolesController < ApplicationController
+      include RbacConcern
       before_action :authorize_request
       before_action :set_server
-      before_action :check_admin_permission
 
       def index
+        return unless require_permission('read_messages', @server.id) # 一般ユーザーもロール一覧は見れる
         roles = @server.server_roles.order(:position, :name)
         render json: roles.map { |role| role_response(role) }
       end
 
       def create
+        return unless require_permission('manage_roles', @server.id) # Admin権限必要
         role = @server.server_roles.build(role_params)
         
         if role.save
@@ -21,6 +23,7 @@ module Api
       end
 
       def update
+        return unless require_permission('manage_roles', @server.id) # Admin権限必要
         role = @server.server_roles.find(params[:id])
         
         if role.update(role_params)
@@ -31,6 +34,7 @@ module Api
       end
 
       def destroy
+        return unless require_permission('manage_roles', @server.id) # Admin権限必要
         role = @server.server_roles.find(params[:id])
         
         if role.default_role?
@@ -43,6 +47,7 @@ module Api
 
       # ユーザーにロールを割り当て
       def assign_role
+        return unless require_permission('manage_roles', @server.id) # Admin権限必要
         user_id = params[:userId] || params[:user_id]
         membership = @server.memberships.find_by(user_auth0_id: user_id)
         role = @server.server_roles.find(params[:id])
@@ -52,28 +57,27 @@ module Api
           return
         end
 
-        assignment = RoleAssignment.find_or_create_by(
+        # 既存のロール割り当てを削除してから新しいロールを割り当て
+        membership.role_assignments.destroy_all
+        assignment = RoleAssignment.create!(
           membership: membership,
           server_role: role
         )
 
-        if assignment.persisted?
-          render json: { 
-            message: "Role assigned successfully",
-            assignment: {
-              id: assignment.id,
-              userId: membership.user_auth0_id,
-              roleId: role.id,
-              roleName: role.name
-            }
+        render json: { 
+          message: "Role assigned successfully",
+          assignment: {
+            id: assignment.id,
+            userId: membership.user_auth0_id,
+            roleId: role.id,
+            roleName: role.name
           }
-        else
-          render json: { errors: assignment.errors.full_messages }, status: :unprocessable_entity
-        end
+        }
       end
 
       # ユーザーからロールを削除
       def remove_role
+        return unless require_permission('manage_roles', @server.id) # Admin権限必要
         user_id = params[:userId] || params[:user_id]
         membership = @server.memberships.find_by(user_auth0_id: user_id)
         role = @server.server_roles.find(params[:id])
@@ -95,17 +99,6 @@ module Api
 
       private
 
-      def check_admin_permission
-        membership = @server.memberships.find_by(user_auth0_id: current_user_auth0_id)
-        unless membership
-          render json: { error: "User not found in server" }, status: :forbidden
-        end
-        # 一時的に管理者権限チェックを無効化（テスト用）
-        # unless membership&.has_role?('admin')
-        #   render json: { error: "Admin permission required" }, status: :forbidden
-        # end
-      end
-
       def role_params
         params.permit(:name, :color, :description, :position, :mentionable, :hoist)
       end
@@ -123,9 +116,21 @@ module Api
           permissionLevel: role.permission_level,
           defaultRole: role.default_role?,
           memberCount: role.role_assignments.count,
+          permissions: get_role_permissions(role),
           createdAt: role.created_at,
           updatedAt: role.updated_at
         }
+      end
+
+      def get_role_permissions(role)
+        RbacService.permissions.map do |permission, required_level|
+          {
+            name: permission,
+            description: RbacService.permission_description(permission),
+            hasPermission: role.permission_level >= required_level,
+            required_level: required_level
+          }
+        end
       end
     end
   end
