@@ -169,6 +169,19 @@ class RbacService
       PERMISSIONS
     end
 
+    # サーバー内のAdmin数を取得
+    def count_admins(server_id)
+      server = Server.find(server_id)
+      admin_count = 0
+      
+      server.memberships.each do |membership|
+        rbac = RbacService.new(membership.user_auth0_id, server_id)
+        admin_count += 1 if rbac.admin?
+      end
+      
+      admin_count
+    end
+
     # 権限の説明を取得
     def permission_description(permission)
       descriptions = {

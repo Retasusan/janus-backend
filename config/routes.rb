@@ -24,7 +24,7 @@ Rails.application.routes.draw do
           resources :messages, only: [:index, :create]
           resources :channel_permissions, only: [:index, :create, :update, :destroy], path: 'permissions'
         end
-        resources :members, only: [:index, :show] do
+        resources :members, only: [:index, :show, :destroy] do
           collection do
             get :me
           end

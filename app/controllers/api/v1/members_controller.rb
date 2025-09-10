@@ -113,6 +113,52 @@ module Api
         render json: { error: "Member not found" }, status: :not_found
       end
 
+      # メンバーをサーバーから削除（kick/ban）
+      def destroy
+        return unless require_permission('kick_users', @server.id)
+        
+        target_membership = @server.memberships.find_by(user_auth0_id: params[:id])
+        unless target_membership
+          render json: { error: "Member not found" }, status: :not_found
+          return
+        end
+
+        # 自分自身を削除しようとした場合
+        if target_membership.user_auth0_id == current_user_auth0_id
+          render json: { error: "Cannot remove yourself from the server" }, status: :forbidden
+          return
+        end
+
+        # 削除対象がAdminかチェック
+        target_rbac = RbacService.new(target_membership.user_auth0_id, @server.id)
+        if target_rbac.admin?
+          # サーバー内のAdmin数をチェック
+          admin_count = 0
+          @server.memberships.each do |membership|
+            rbac = RbacService.new(membership.user_auth0_id, @server.id)
+            admin_count += 1 if rbac.admin?
+          end
+          
+          if admin_count <= 1
+            render json: { 
+              error: 'Cannot remove the last administrator. At least one admin must remain in the server.',
+              current_admin_count: admin_count
+            }, status: :forbidden
+            return
+          end
+        end
+
+        # メンバーを削除
+        target_membership.destroy!
+        
+        render json: { 
+          message: 'Member removed successfully',
+          removed_user_id: params[:id]
+        }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "Member not found" }, status: :not_found
+      end
+
       private
 
       def set_server

@@ -61,6 +61,16 @@ module Api
         end
 
         membership = server.memberships.create!(user_auth0_id: current_user_auth0_id, role: "member")
+        
+        # デフォルトロールを自動割り当て（memberロール）
+        member_role = server.server_roles.find_by(name: 'member')
+        if member_role
+          membership.role_assignments.create!(server_role: member_role)
+          Rails.logger.info "Assigned member role to user #{current_user_auth0_id} in server #{server.id}"
+        else
+          Rails.logger.warn "No member role found for server #{server.id}"
+        end
+        
         render json: server_response(server), status: :created
       end
 

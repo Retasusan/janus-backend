@@ -63,6 +63,7 @@ module RbacConcern
     target_server_id = server_id || params[:server_id]
     
     unless current_user_auth0_id
+      Rails.logger.warn "require_server_member: No authenticated user"
       render json: { error: "Authentication required" }, status: :unauthorized
       return false
     end
@@ -73,10 +74,20 @@ module RbacConcern
     )
 
     unless membership
-      render json: { error: "Server membership required" }, status: :forbidden
+      Rails.logger.warn "require_server_member: No membership found for user #{current_user_auth0_id} in server #{target_server_id}"
+      Rails.logger.warn "Available memberships for user: #{Membership.where(user_auth0_id: current_user_auth0_id).pluck(:server_id)}"
+      render json: { 
+        error: "Server membership required", 
+        debug: {
+          user_id: current_user_auth0_id,
+          server_id: target_server_id,
+          user_memberships: Membership.where(user_auth0_id: current_user_auth0_id).pluck(:server_id)
+        }
+      }, status: :forbidden
       return false
     end
 
+    Rails.logger.info "require_server_member: Access granted for user #{current_user_auth0_id} in server #{target_server_id}"
     true
   end
 
