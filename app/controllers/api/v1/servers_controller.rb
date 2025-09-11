@@ -89,6 +89,15 @@ module Api
         render json: { error: "Server not found or access denied" }, status: :not_found
       end
 
+      # メンバー一覧
+      def members
+        server = user_servers.find(params[:id])
+        members = server.memberships.select(:id, :user_auth0_id, :role, :created_at)
+        render json: members.map { |m| { id: m.id, auth0Id: m.user_auth0_id, role: m.role, joinedAt: m.created_at } }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "Server not found or access denied" }, status: :not_found
+      end
+
       private
 
       def server_params

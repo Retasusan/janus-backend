@@ -19,9 +19,33 @@ Rails.application.routes.draw do
         member do
           post :invite
           patch :regenerate_invite_code
+          get :members
         end
         resources :channels, only: [:index, :create] do
           resources :messages, only: [:index, :create]
+          resources :events, only: [:index, :create]
+          resources :files, only: [:index, :create] do
+            member do
+              get :download
+            end
+          end
+          # forum_threads and forum_posts removed per request
+          resources :whiteboards, only: [:index, :create]
+          resources :surveys, only: [:index, :create] do
+            member do
+              post :vote
+            end
+          end
+          resources :tasks, only: [:index, :create, :update]
+          resources :wiki_pages, only: [:index, :create, :show, :update]
+          resources :budget_entries, only: [:index, :create]
+          resources :inventory_items, only: [:index, :create]
+          resources :photos, only: [:index, :create] do
+            member do
+              get :download
+            end
+          end
+          resources :diary_entries, only: [:index, :create]
         end
       end
     end
