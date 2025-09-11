@@ -11,6 +11,9 @@ module Authenticatable
   private
 
   def authorize_request
+    # サーバートークン認証が既に成功している場合はスキップ
+    return if @skip_auth0_check || (respond_to?(:server_token_authenticated?) && server_token_authenticated?)
+    
     token = request.headers["Authorization"]&.split(" ")&.last
 
     if token

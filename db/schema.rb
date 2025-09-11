@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_10_124029) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_11_124851) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -217,6 +217,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_124029) do
     t.text "description"
     t.boolean "is_public"
     t.text "settings"
+    t.string "api_token"
+    t.index ["api_token"], name: "index_servers_on_api_token", unique: true
     t.index ["invite_code"], name: "index_servers_on_invite_code"
   end
 

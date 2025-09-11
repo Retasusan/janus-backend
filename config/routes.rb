@@ -11,7 +11,7 @@ Rails.application.routes.draw do
       resources :test
       get "/", to: "health#show"
       get "/users/me", to: "users#me"
-      resources :servers, only: [:index, :create] do
+      resources :servers, only: [:index, :create, :update] do
         collection do
           post :join
           get 'invite/:invite_code', to: 'servers#invite_info'
@@ -20,6 +20,7 @@ Rails.application.routes.draw do
           post :invite
           patch :regenerate_invite_code
           get :members
+          post :token, to: 'servers#generate_token'
         end
         resources :channels, only: [:index, :create] do
           resources :messages, only: [:index, :create]
