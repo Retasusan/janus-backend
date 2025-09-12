@@ -16,9 +16,12 @@ test:
   database: test_postgresql
 
 production:
-  adapter: postgresql
-  encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  <<: *default
   url: <%= ENV['DATABASE_URL'] %>
   database: production_postgresql
+
+# SolidCable / ActionCable 用の設定
+cable:
+  <<: *production
+
 
