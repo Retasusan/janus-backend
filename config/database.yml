@@ -20,21 +20,21 @@ production:
     adapter: postgresql
     encoding: unicode
     pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    url: <%= ENV['HEROKU_POSTGRESQL_MAROON_URL'] %>
+    url: <%= ENV['DATABASE_URL'] %>
   queue:
     adapter: postgresql
     encoding: unicode
     pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    url: <%= ENV['DATABASE_HEROKU_POSTGRESQL_MAROON_URLURL'] %>
+    url: <%= ENV['DATABASE_URL'] %>
   cache:
     adapter: postgresql
     encoding: unicode
     pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-    url: <%= ENV['HEROKU_POSTGRESQL_MAROON_URL'] %>
+    url: <%= ENV['DATABASE_URL'] %>
 
 cable:
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  url: <%= ENV['HEROKU_POSTGRESQL_MAROON_URL'] %>
+  url: <%= ENV['DATABASE_URL'] %>
 
