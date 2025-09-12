@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_11_124851) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_12_124001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -269,6 +269,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_11_124851) do
     t.string "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "user_profiles", force: :cascade do |t|
+    t.string "auth0_id"
+    t.string "display_name"
+    t.string "avatar_url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["auth0_id"], name: "index_user_profiles_on_auth0_id", unique: true
   end
 
   create_table "users", force: :cascade do |t|

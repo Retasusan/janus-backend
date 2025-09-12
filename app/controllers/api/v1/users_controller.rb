@@ -5,31 +5,49 @@ module Api
 
       # GET /users/me
       def me
-        token = request.headers["Authorization"]&.split(" ")&.last
-        return render json: { error: "Missing token" }, status: :unauthorized unless token
+        render json: {
+          auth0_id: current_user_auth0_id,
+          name: current_user_name,
+          email: current_user_email
+        }
+      end
 
-        url = URI("https://#{ENV['AUTH0_DOMAIN']}/userinfo")
-        https = Net::HTTP.new(url.host, url.port)
-        https.use_ssl = true
+      # GET /users/profile
+      def profile
+        profile = UserProfile.find_or_create_for_auth0_id(
+          current_user_auth0_id,
+          default_name: current_user_name
+        )
+        
+        render json: {
+          auth0_id: profile.auth0_id,
+          display_name: profile.display_name,
+          avatar_url: profile.avatar_url
+        }
+      end
 
-        req = Net::HTTP::Get.new(url)
-        req["Accept"] = "application/json"
-        req["Authorization"] = "Bearer #{token}"  # ←ここがポイント
+      # PUT /users/profile
+      def update_profile
+        profile = UserProfile.find_or_create_for_auth0_id(
+          current_user_auth0_id,
+          default_name: current_user_name
+        )
 
-        res = https.request(req)
-        if res.is_a?(Net::HTTPSuccess)
-          user_info = JSON.parse(res.body)
-
-          # ユーザーがDBにいるか確認
-          user = User.find_or_initialize_by(auth0_id: user_info["sub"])
-          user.name = user_info["name"]
-          user.email = user_info["email"]
-          user.save!
-
-          render json: user
+        if profile.update(profile_params)
+          render json: {
+            auth0_id: profile.auth0_id,
+            display_name: profile.display_name,
+            avatar_url: profile.avatar_url
+          }
         else
-          render json: { error: "Failed to fetch user info" }, status: :unauthorized
+          render json: { errors: profile.errors.full_messages }, status: :unprocessable_entity
         end
+      end
+
+      private
+
+      def profile_params
+        params.permit(:display_name, :avatar_url)
       end
     end
   end

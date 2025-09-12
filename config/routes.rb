@@ -11,6 +11,8 @@ Rails.application.routes.draw do
       resources :test
       get "/", to: "health#show"
       get "/users/me", to: "users#me"
+      get "/users/profile", to: "users#profile"
+      put "/users/profile", to: "users#update_profile"
       resources :servers, only: [:index, :create, :update] do
         collection do
           post :join
