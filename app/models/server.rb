@@ -10,9 +10,21 @@ class Server < ApplicationRecord
     find_by(invite_code: code)
   end
 
+  # APIトークンでサーバーを検索
+  def self.find_by_api_token(token)
+    find_by(api_token: token)
+  end
+
   # 新しい招待コードを生成
   def regenerate_invite_code!
     update!(invite_code: generate_unique_invite_code)
+  end
+
+  # 新しいAPIトークンを生成
+  def generate_api_token!
+    token = generate_unique_api_token
+    update!(api_token: token)
+    token
   end
 
   private
@@ -25,6 +37,13 @@ class Server < ApplicationRecord
     loop do
       code = SecureRandom.alphanumeric(8).upcase
       break code unless Server.exists?(invite_code: code)
+    end
+  end
+
+  def generate_unique_api_token
+    loop do
+      token = "janus_#{SecureRandom.hex(32)}"
+      break token unless Server.exists?(api_token: token)
     end
   end
 end

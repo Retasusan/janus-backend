@@ -89,6 +89,50 @@ module Api
         render json: { error: "Server not found or access denied" }, status: :not_found
       end
 
+      # メンバー一覧
+      def members
+        server = user_servers.find(params[:id])
+        members = server.memberships.select(:id, :user_auth0_id, :role, :created_at)
+        render json: members.map { |m| { id: m.id, auth0Id: m.user_auth0_id, role: m.role, joinedAt: m.created_at } }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "Server not found or access denied" }, status: :not_found
+      end
+
+      # APIトークン生成（サーバーオーナーのみ）
+      def generate_token
+        server = user_servers.find(params[:id])
+        membership = server.memberships.find_by(user_auth0_id: current_user_auth0_id)
+
+        unless membership&.role == "owner"
+          render json: { error: "Only server owners can generate API tokens" }, status: :forbidden
+          return
+        end
+
+        token = server.generate_api_token!
+        render json: { token: token }
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "Server not found or access denied" }, status: :not_found
+      end
+
+      # サーバー更新（名前変更など）
+      def update
+        server = user_servers.find(params[:id])
+        membership = server.memberships.find_by(user_auth0_id: current_user_auth0_id)
+
+        unless membership&.role == "owner"
+          render json: { error: "Only server owners can update server settings" }, status: :forbidden
+          return
+        end
+
+        if server.update(server_params)
+          render json: server_response(server)
+        else
+          render json: { errors: server.errors.full_messages }, status: :unprocessable_entity
+        end
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "Server not found or access denied" }, status: :not_found
+      end
+
       private
 
       def server_params
@@ -100,6 +144,7 @@ module Api
           id: server.id,
           name: server.name,
           inviteCode: server.invite_code,
+          api_token: server.api_token,
           createdAt: server.created_at,
           updatedAt: server.updated_at
         }
